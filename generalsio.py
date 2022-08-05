@@ -66,6 +66,9 @@ class GameClient(object):
         self._enemy_total_land = 1
         self._replay_url = None
 
+        self._game_started = False
+        self._custom_game_id = None
+
         self._half_turns = 0
         self._sent_attack_orders = 0
 
@@ -91,6 +94,7 @@ class GameClient(object):
         force_start = True
         self._sock.emit('set_force_start', custom_game_id, force_start)
         self._in_queue = True
+        self._custom_game_id = custom_game_id
         print('Joined custom queue')
 
     def chat(self, message):
@@ -110,6 +114,8 @@ class GameClient(object):
 
     def wait(self, seconds=None):
         self._sock.wait(seconds)
+        if not self._game_started and self._custom_game_id:
+            self._sock.emit('set_force_start', self._custom_game_id, True)
 
     def _leave_game(self):
         self._sock.emit('leave_game')
