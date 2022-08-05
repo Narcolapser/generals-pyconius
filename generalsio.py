@@ -29,11 +29,11 @@ class GameClient(object):
     """
     A small SDK for the http://generals.io bot API.
     """
-    SERVER_URL = 'http://botws.generals.io'
+    SERVER_URL = 'https://bot.generals.io'
     REPLAY_URL_TEMPLATE = 'http://bot.generals.io/replays/%s'
 
     def __init__(self, user_id, username):
-        self._sock = SocketIO(GameClient.SERVER_URL, 80, BaseNamespace)
+        self._sock = SocketIO(GameClient.SERVER_URL, Namespace=BaseNamespace)
 
         self._sock.on('connect', self._on_connect)
         self._sock.on('reconnect', self._on_reconnect)
@@ -72,7 +72,7 @@ class GameClient(object):
         self._listeners = []
 
     def __del__(self):
-        if self._in_game:
+        if hasattr(self, 'in_game') and self._in_game:
             self._leave_game()
         else:
             self._sock.emit('cancel', '1v1')
@@ -91,6 +91,7 @@ class GameClient(object):
         force_start = True
         self._sock.emit('set_force_start', custom_game_id, force_start)
         self._in_queue = True
+        print('Joined custom queue')
 
     def chat(self, message):
         self._sock.emit('chat_message', self._chat_room, message)

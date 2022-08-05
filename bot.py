@@ -31,11 +31,12 @@ class WorldUnderstanding(object):
 
 class Bot(GameClientListener):
     def __init__(self, user_id, username, custom_game_name):
+        print('building bot')
         self.client = GameClient(user_id, username)
         self.world = WorldUnderstanding()
         self.client.add_listener(self)
         self.game_over = False
-
+        print('instatiated')
         if custom_game_name:
             self.client.join_custom(custom_game_name)
         else:
@@ -61,6 +62,7 @@ class Bot(GameClientListener):
         self.client.attack(self.world.player_pos, move)
 
     def handle_game_start(self, map_size, start_pos, enemy_username):
+        print('Starting game')
         self.world.map_size = map_size
         self.world.player_pos = start_pos
 
@@ -83,15 +85,17 @@ class Bot(GameClientListener):
 
 
 def main():
-    if len(sys.argv) > 1:
-        custom_game_name = sys.argv[1]
-        run_forever = False
-        print('Joining custom game %s' % custom_game_name)
-    else:
-        custom_game_name = None
-        run_forever = True
-        print('Joining 1v1 queue')
+    # if len(sys.argv) > 1:
+    #     custom_game_name = sys.argv[1]
+    #     run_forever = False
+    #     print('Joining custom game %s' % custom_game_name)
+    # else:
+    #     custom_game_name = None
+    #     run_forever = True
+    #     print('Joining 1v1 queue')
 
+    custom_game_name = "delta"
+    run_forever = False
     while True:
         config = commentjson.loads(open(CONFIG_FILENAME).read())    
         bot = Bot(config['user_id'], config['username'], custom_game_name)
