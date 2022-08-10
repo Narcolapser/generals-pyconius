@@ -1,6 +1,8 @@
 import json
 import math
+from string import ascii_letters
 from socketIO_client import SocketIO, BaseNamespace
+import random
 
 
 class Tile(object): # enum
@@ -204,6 +206,30 @@ class GameClient(object):
         else:
             print('Username successfully set!')
 
+class WorldUnderstanding(object):
+    def __init__(self):
+        self.map_size = (None, None)
+        self.enemy_pos = None
+        self.player_pos = None
+
+        self.cities = set()
+        self.mountains = set()
+
+        self.last_seen_scores = None
+        self.expected_scores = None
+
+        self.player_owned = set()
+        self.player_index = None
+
+    def update(self, tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land):
+        self.player_owned = set()
+        for x in range(self.map_size[0]):
+            for y in range(self.map_size[1]):
+                    if tiles[x][y] == Tile.MOUNTAIN:
+                        self.mountains.add((x, y))
+                    elif tiles[x][y] == self.player_index:
+                        self.player_owned.add((x,y))
+
 
 def _list_to_mat(ilist, size):
     return [
@@ -236,3 +262,75 @@ def _patch(old, diff):
 
 def pretty_print(json_like):
     print(json.dumps(json_like, sort_keys=True, indent=4, separators=(',', ': ')))
+
+class ExampleBot(GameClientListener):
+    def __init__(self, user_id, username, custom_game_name):
+        self.client = GameClient(user_id, username)
+        self.world = WorldUnderstanding()
+        self.client.add_listener(self)
+        self.game_over = False
+        self.client.join_custom(custom_game_name)
+        self.printed_map = False
+
+    def handle_game_update(self, half_turns, tiles, armies, cities, enemy_position, 
+                           enemy_total_army, enemy_total_land):
+        self.world.update(tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land)
+        for row in tiles:
+            print(row)
+        self.printed_map = True
+        
+
+
+        # Move randomly
+        delta_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        
+        moves = []
+        for tile in self.world.player_owned:
+            for delta in delta_moves:
+                position = (tile[0] + delta[0], tile[1] + delta[1])
+                moves.append((tile,position))
+
+        print('possible moves:')
+        print(moves)
+        print('player owned:')
+        print(self.world.player_owned)
+        move = random.choice(moves)
+        self.client.attack(move[0], move[1])
+
+    def handle_game_start(self, map_size, start_pos, enemy_username):
+        print('Starting game')
+        self.world.map_size = map_size
+        self.world.player_pos = start_pos
+        self.world.player_index = self.client._player_index
+        print(f'Player index: {self.world.player_index}')
+
+    def handle_game_over(self, won, replay_url):
+        if won:
+            header = 'Game Won'
+        else:
+            header = 'Game Lost'
+        print(header)
+        print('='*len(header))
+        print('Replay: %s\n' % replay_url)
+        self.game_over = True
+
+    def handle_chat(self, username, message):
+        print('%s: %s' % (username, message))
+
+    def block_forever(self):
+        while not self.game_over:
+            self.client.wait(seconds=2)
+
+# Running this file creates a quick bot for testing your bot. 
+if __name__ == "__main__":
+    #user_id = ''.join([random.choice(ascii_letters) for i in range(16)])
+    #username = '[Bot] ' + ''.join([random.choice(ascii_letters) for i in range(4)])
+    user_id = 'alksjg'
+    username = '[Bot] meet bot'
+    custom_game_name = "delta"
+    run_forever = False
+    while True:
+        bot = ExampleBot(user_id, username, custom_game_name)
+        bot.block_forever()
+        if not run_forever:
+            break
