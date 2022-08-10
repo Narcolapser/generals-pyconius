@@ -38,6 +38,7 @@ class GameClient(object):
         self._sock.on('connect', self._on_connect)
         self._sock.on('reconnect', self._on_reconnect)
         self._sock.on('disconnect', self._on_disconnect)
+        self._sock.on('error_set_username', self._on_error_set_username)
 
         self._sock.on('game_won', self._on_game_won)
         self._sock.on('game_lost', self._on_game_lost)
@@ -196,6 +197,12 @@ class GameClient(object):
 
     def _on_disconnect(self):
         print('[Disconnected]')
+
+    def _on_error_set_username(self, error_message):
+        if error_message:
+            print('Error setting username:', error_message)
+        else:
+            print('Username successfully set!')
 
 
 def _list_to_mat(ilist, size):
