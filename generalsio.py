@@ -1,5 +1,6 @@
 import json
 import math
+import sys
 import random
 from string import ascii_letters
 from socketIO_client import SocketIO, BaseNamespace
@@ -264,20 +265,26 @@ class WorldUnderstanding(object):
         self.enemy_pos = None
         self.player_pos = None
 
-        self.cities = None
+        self.cities = set()
         self.mountains = set()
 
         self.last_seen_scores = None
         self.expected_scores = None
 
+        self.player_owned = set()
+        self.player_index = None
+
     def update(self, tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land):
-        for x in range(self.map_size[0]):
-            for y in range(self.map_size[1]):
+        self.player_owned = set()
+        for x in range(self.map_size[1]):
+            for y in range(self.map_size[0]):
                     if tiles[x][y] == Tile.MOUNTAIN:
                         self.mountains.add((x, y))
+                    elif tiles[x][y] == self.player_index:
+                        self.player_owned.add((x,y))
 
 
-class Bot(GameClientListener):
+class BaseBot(GameClientListener):
     def __init__(self, user_id, username, custom_game_name):
         print('building bot')
         self.client = GameClient(user_id, username)
@@ -336,10 +343,17 @@ class Bot(GameClientListener):
 if __name__ == '__main__':
     userid = ''.join([random.choice(ascii_letters) for i in range(16)])
     username = '[Bot] ' + ''.join([random.choice(ascii_letters) for i in range(4)])
-    custom_game_name = "narconium"
+
+    if len(sys.argv) > 1:
+        custom_game_name = sys.argv[1]
+        print('Joining custom game %s' % custom_game_name)
+    else:
+        custom_game_name = "delta"
+        print('Joining delta')
+
     run_forever = False
     while True:
-        bot = Bot(userid, username, custom_game_name)
+        bot = BaseBot(userid, username, custom_game_name)
         bot.block_forever()
         if not run_forever:
             break
