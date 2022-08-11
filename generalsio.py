@@ -209,8 +209,8 @@ class GameClient(object):
 
 def _list_to_mat(ilist, size):
     return [
-        [ilist[x*size[1] + y] for y in range(size[1])]
-        for x in range(size[0])
+        [ilist[x*size[0] + y] for y in range(size[0])]
+        for x in range(size[1])
     ]
 
 
