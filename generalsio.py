@@ -315,6 +315,7 @@ class BaseBot(GameClientListener):
         print('Starting game')
         self.world.map_size = map_size
         self.world.player_pos = start_pos
+        self.world.player_index = self.client._player_index
 
     def handle_game_over(self, won, replay_url):
         if won:
