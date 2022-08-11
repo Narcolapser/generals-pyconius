@@ -79,11 +79,14 @@ class GameClient(object):
         self._listeners = []
 
     def __del__(self):
-        if hasattr(self, 'in_game') and self._in_game:
-            self._leave_game()
-        else:
-            self._sock.emit('cancel', '1v1')
-            self._in_queue = False
+        try:
+            if hasattr(self, 'in_game') and self._in_game:
+                self._leave_game()
+            else:
+                self._sock.emit('cancel', '1v1')
+                self._in_queue = False
+        except:
+            pass
 
     def join_1v1_queue(self):
         if self._game_ended:
