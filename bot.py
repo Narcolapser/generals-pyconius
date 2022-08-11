@@ -3,7 +3,6 @@ from string import ascii_letters
 import sys
 
 import commentjson
-import numpy as np
 
 from generalsio import Tile, GameClient, GameClientListener, WorldUnderstanding
 
