@@ -307,18 +307,8 @@ class BaseBot(GameClientListener):
 
         # Move randomly
         delta_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        #moves = [np.add(self.world.player_pos, delta_move) for delta_move in delta_moves]
         moves = [(self.world.player_pos[0] + move[0], self.world.player_pos[1] + move[1]) for move in delta_moves]
-        def move_feasible(position):
-            if tuple(position) in self.world.mountains:
-                return False
-            if not 0 <= position[0] < self.world.map_size[0]:
-                return False
-            if not 0 <= position[1] < self.world.map_size[1]:
-                return False
-            return True
-        move_options = [move for move in moves if move_feasible(move)]
-        move = random.choice(move_options)
+        move = random.choice(moves)
         self.client.attack(self.world.player_pos, move)
 
     def handle_game_start(self, map_size, start_pos, enemy_username):
