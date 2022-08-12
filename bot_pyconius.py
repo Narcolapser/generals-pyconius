@@ -90,6 +90,91 @@ class Node():
             child_distances.sort(key=lambda x:x[0])
         return child_distances
 
+    def step_towards(self, position, target):
+        # Check that the position and the target are in the tree:
+        if position not in self or target not in self:
+            return False
+        
+        # Establish if one or the other of the children is self.
+        if position == self.position:
+            position_child = self
+        else:
+            position_child = None
+        
+        if target == self.position:
+            target_child = self
+        else:
+            target_child = None
+
+        print(f'self: {self.position} positon: {position} target: {target}')
+        print(f'position in tree: {position in self} target in tree: {target in self}')
+        print(f'position child: {position_child} target child: {target_child}')
+        for child in self.children:
+            if isinstance(child,Node):
+                if position in child:
+                    position_child = child
+                if target in child:
+                    target_child = child
+            else:
+                if position == child:
+                    position_child = child
+                if target == child:
+                    target_child = child
+            
+            print(f'position in child {position in child or position == child} target in child {target in child or target == child}')
+
+        # If both position and target are down the same branch, dig deeper.
+        if position_child == target_child:
+            return position_child.step_towards(position, target)
+        
+        # If they are down different branches we are in the lowest common parent. Here there are now 3 cases to
+        # consider. First that we are the position and the target is down a branch. In this case we need to return
+        # the position of the target child. Second that we are the target and third that both target and position are
+        # down branches. In both of those cases we need the parent directly above the current position
+        if position == self.position:
+            if isinstance(target_child,Node):
+                return target_child.position
+            else:
+                return target_child
+
+        return self.parent_of(position)
+
+        
+    def parent_of(self, position):
+        ''' Gets the parent of a provided node. Thus allowing you to travel up the tree.'''
+        if position not in self:
+            return False
+        
+        if position == self.position:
+            return self.parent
+        
+        for child in self.children:
+            if isinstance(child,Node):
+                check = child.parent_of(position)
+                if check:
+                    return check
+            else:
+                if child == position:
+                    return self.position
+        return False
+
+
+    def __contains__(self, position):
+        print(f'checking contains. Self {self.position} position {position}')
+        if self.position == position:
+            return True
+        
+        tracker = False
+        for child in self.children:
+            if isinstance(child,Node):
+                tracker |= position in child
+            else:
+                print(f'checking for child. child {child} position {position}')
+                tracker |= position == child
+        print(f'Found position in this branch {tracker}')
+        return tracker
+        
+
 
 CONFIG_FILENAME = 'config.json'
 class Bot(BaseBot):
@@ -121,16 +206,20 @@ class Bot(BaseBot):
                 largest = tile
         
         # Lastly figure out the best way from the largest army to the target
-        route_checked = {largest}
-        surrounding = get_surrounding(largest, tiles)
-        largest_root = Node(largest, None, surrounding, tiles, route_checked, self.world.player_index)
-        direction_options = largest_root.distance(target)
-        print(f'Possible directions: {direction_options}')
+        # route_checked = {largest}
+        # surrounding = get_surrounding(largest, tiles)
+        # largest_root = Node(largest, None, surrounding, tiles, route_checked, self.world.player_index)
+        # direction_options = largest_root.distance(target)
+        # print(f'Possible directions: {direction_options}')
+
+        fastest = root.step_towards(largest, target)
 
         print(f'Target is {target} largest army is at {largest}')
-        if len(direction_options) > 0:
-            fastest = direction_options[0][1]
-            print(f'Target is {target} largest army is at {largest} moving to {fastest}')
+        # if len(direction_options) > 0:
+        #     fastest = direction_options[0][1]
+        #     print(f'Target is {target} largest army is at {largest} moving to {fastest}')
+        #     self.client.attack(largest, fastest)
+        if fastest:
             self.client.attack(largest, fastest)
         else:
             print('skipping due to lack of options')
