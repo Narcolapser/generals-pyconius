@@ -107,14 +107,16 @@ class Bot(BaseBot):
         #root.pretty_print()
 
         leaves = root.get_leaves()
+        print(leaves)
         leaves.sort(key=lambda x: x[0])
-        target = leaves.pop()[1] # Closes tile that isn't ours identified.
+        print(leaves)
+        target = leaves.pop(0)[1] # Closes tile that isn't ours identified.
+        print(f'attacking {target}')
 
         # Next find our largest army
         largest = self.world.player_pos
         print(f'player owns: {self.world.player_owned}')
         for tile in self.world.player_owned:
-            print(f'Checking if armies on {tile} are bigger')
             if armies[largest[0]][largest[1]] <= armies[tile[0]][tile[1]]:
                 largest = tile
         
@@ -123,6 +125,7 @@ class Bot(BaseBot):
         surrounding = get_surrounding(largest, tiles)
         largest_root = Node(largest, None, surrounding, tiles, route_checked, self.world.player_index)
         direction_options = largest_root.distance(target)
+        print(f'Possible directions: {direction_options}')
 
         print(f'Target is {target} largest army is at {largest}')
         if len(direction_options) > 0:

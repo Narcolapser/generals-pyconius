@@ -63,7 +63,7 @@ def main():
 
     while True:
         config = json.loads(open(CONFIG_FILENAME).read())    
-        bot = Bot(config['user_id'], config['username'], custom_game_name)
+        bot = Bot('alskdjlfe', '[Bot] CESpread', custom_game_name)
         bot.block_forever()
         if not run_forever:
             break
