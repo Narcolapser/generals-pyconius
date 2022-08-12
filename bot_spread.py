@@ -2,25 +2,54 @@ import random
 import sys
 import json
 
-from generalsio import BaseBot, print_map
+from generalsio import BaseBot, print_map, Tile
 
 CONFIG_FILENAME = 'config.json'
 class Bot(BaseBot):
     def handle_game_update(self, half_turns, tiles, armies, cities, enemy_position, 
                            enemy_total_army, enemy_total_land):
         self.world.update(tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land)
-        print_map(tiles)
-        print(self.world.player_owned)
         # Move randomly
         delta_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        moves = []
+        all_moves = []
+        capture_moves = []
         for tile in self.world.player_owned:
             for delta in delta_moves:
-                position = (tile[0] + delta[0], tile[1] + delta[1])
-                moves.append((tile,position))
+                target = (tile[0] + delta[0], tile[1] + delta[1])
+                # Avoid invalid moves off the edge of the map
+                if target[0] > len(tiles):
+                    continue
+                if target[1] > len(tiles[0]):
+                    continue
+                if target[0] < 0:
+                    continue
+                if target[1] < 0:
+                    continue
 
-        move = random.choice(moves)
-        self.client.attack(move[0], move[1])
+                # Don't attempt to spread into mountians.
+                if tiles[target[0]][target[1]] == Tile.MOUNTAIN:
+                    continue
+                
+                # Don't attempt to move tiles with one troop on them.
+                if armies[tile[0]][tile[1]] < 2:
+                    continue
+
+                if target not in tiles:
+                    capture_moves.append((tile,target))
+
+                all_moves.append((tile,target))
+
+        moves = all_moves
+        if len(capture_moves) == 0:
+            print('no capture moves available. spreading')
+        else:
+            moves = capture_moves
+
+        if len(moves) == 0:
+            print('skipping, no valid moves')
+        else:
+            move = random.choice(moves)
+            self.client.attack(move[0], move[1])
 
 def main():
     if len(sys.argv) > 1:
