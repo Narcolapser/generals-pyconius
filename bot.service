@@ -1,0 +1,14 @@
+[Unit]
+Description = Service for running a bot
+After=network.target
+
+[Service]
+Type=simple
+User=toben
+WorkingDirectory=/home/toben/Code/generals_bots/generals-pyconius/
+ExecStart=/home/toben/Code/generals_bots/generals-pyconius/bot_edgehawk.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
