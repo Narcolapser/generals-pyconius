@@ -4,6 +4,7 @@ import sys
 import random
 from string import ascii_letters
 from socketIO_client import SocketIO, BaseNamespace
+import time
 
 
 class Tile(object): # enum
@@ -322,6 +323,7 @@ class BaseBot(GameClientListener):
             header = 'Game Won'
         else:
             header = 'Game Lost'
+        open('results.csv','a').write(f'{time.ctime()},{header}\n')
         print(header)
         print('='*len(header))
         print('Replay: %s\n' % replay_url)
