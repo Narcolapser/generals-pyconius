@@ -177,49 +177,43 @@ CONFIG_FILENAME = 'config.json'
 class Bot(BaseBot):
     def handle_game_update(self, half_turns, tiles, armies, cities, enemy_position, 
                            enemy_total_army, enemy_total_land):
-        self.world.update(tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land)
-        pos = self.world.player_pos
-        #print(f'Player owns {pos} which has a value {tiles[pos[0]][pos[1]]} and player index of {self.world.player_index}')
-        
+        try:
+            self.world.update(tiles, armies, cities, enemy_position, enemy_total_army, enemy_total_land)
+            pos = self.world.player_pos
+            #print(f'Player owns {pos} which has a value {tiles[pos[0]][pos[1]]} and player index of {self.world.player_index}')
+            
 
-        # Construct a map from root to closest tiles not owned by us.
-        checked = {self.world.player_pos}
-        surrounding = get_surrounding(self.world.player_pos,tiles)
-        root = Node(self.world.player_pos, None, surrounding, tiles, checked, self.world.player_index)
-        #root.pretty_print()
+            # Construct a map from root to closest tiles not owned by us.
+            checked = {self.world.player_pos}
+            surrounding = get_surrounding(self.world.player_pos,tiles)
+            root = Node(self.world.player_pos, None, surrounding, tiles, checked, self.world.player_index)
+            #root.pretty_print()
 
-        leaves = root.get_leaves()
-        print(leaves)
-        leaves.sort(key=lambda x: x[0])
-        print(leaves)
-        target = leaves.pop(0)[1] # Closes tile that isn't ours identified.
-        print(f'attacking {target}')
+            leaves = root.get_leaves()
+            print(leaves)
+            leaves.sort(key=lambda x: x[0])
+            print(leaves)
+            target = leaves.pop(0)[1] # Closes tile that isn't ours identified.
+            print(f'attacking {target}')
 
-        # Next find our largest army
-        largest = self.world.player_pos
-        print(f'player owns: {self.world.player_owned}')
-        for tile in self.world.player_owned:
-            if armies[largest[0]][largest[1]] <= armies[tile[0]][tile[1]]:
-                largest = tile
-        
-        # Lastly figure out the best way from the largest army to the target
-        # route_checked = {largest}
-        # surrounding = get_surrounding(largest, tiles)
-        # largest_root = Node(largest, None, surrounding, tiles, route_checked, self.world.player_index)
-        # direction_options = largest_root.distance(target)
-        # print(f'Possible directions: {direction_options}')
+            # Next find our largest army
+            largest = self.world.player_pos
+            print(f'player owns: {self.world.player_owned}')
+            for tile in self.world.player_owned:
+                if armies[largest[0]][largest[1]] <= armies[tile[0]][tile[1]]:
+                    largest = tile
+            
+            fastest = root.step_towards(largest, target)
 
-        fastest = root.step_towards(largest, target)
+            print(f'Target is {target} largest army is at {largest}')
+            if fastest:
+                self.client.attack(largest, fastest)
+            else:
+                print('skipping due to lack of options')
+        except Exception as e:
+            print('Had a woopsy! Going to lap around and hope next turn something changes:')
+            print(e)
 
-        print(f'Target is {target} largest army is at {largest}')
-        # if len(direction_options) > 0:
-        #     fastest = direction_options[0][1]
-        #     print(f'Target is {target} largest army is at {largest} moving to {fastest}')
-        #     self.client.attack(largest, fastest)
-        if fastest:
-            self.client.attack(largest, fastest)
-        else:
-            print('skipping due to lack of options')
 
 def main():
     if len(sys.argv) > 1:
@@ -233,7 +227,7 @@ def main():
 
     while True:
         config = json.loads(open(CONFIG_FILENAME).read())    
-        bot = Bot(config['user_id'], config['username'], custom_game_name)
+        bot = Bot('iuhbghes', '[Bot] EdgeHawk', custom_game_name)
         bot.block_forever()
         if not run_forever:
             break

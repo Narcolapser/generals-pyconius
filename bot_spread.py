@@ -17,9 +17,9 @@ class Bot(BaseBot):
             for delta in delta_moves:
                 target = (tile[0] + delta[0], tile[1] + delta[1])
                 # Avoid invalid moves off the edge of the map
-                if target[0] > len(tiles):
+                if target[0] >= len(tiles):
                     continue
-                if target[1] > len(tiles[0]):
+                if target[1] >= len(tiles[0]):
                     continue
                 if target[0] < 0:
                     continue
