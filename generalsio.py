@@ -323,7 +323,7 @@ class BaseBot(GameClientListener):
             header = 'Game Won'
         else:
             header = 'Game Lost'
-        open('results.csv','a').write(f'{time.ctime()},{header}\n')
+        open('results.csv','a').write(f'{time.ctime()},{header},{replay_url}\n')
         print(header)
         print('='*len(header))
         print('Replay: %s\n' % replay_url)
