@@ -221,9 +221,9 @@ def main():
         run_forever = False
         print('Joining custom game %s' % custom_game_name)
     else:
-        custom_game_name = "delta"
-        run_forever = False
-        print('Joining delta')
+        custom_game_name = None
+        run_forever = True
+        print('Joining 1v1')
 
     while True:
         config = json.loads(open(CONFIG_FILENAME).read())    
