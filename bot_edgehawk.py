@@ -226,7 +226,6 @@ def main():
         print('Joining 1v1')
 
     while True:
-        config = json.loads(open(CONFIG_FILENAME).read())    
         bot = Bot('iuhbghes', '[Bot] EdgeHawk', custom_game_name)
         bot.block_forever()
         if not run_forever:
