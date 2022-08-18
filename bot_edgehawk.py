@@ -251,9 +251,9 @@ def traverse(start, end):
             print(f'Insufficient armies to travel from {start} to {end} ({len(original_path) - 1} tiles).' +
                 f'Travelling {len(path) - 1} tiles to {path[-1]} instead.')
         print(f'Moves queued: {path}')
-        for i in range(len(path)-1):
-            # print(f'queueing move: ${path[i]} to ${path[i+1]}')
-            socket.emit('attack', path[i], path[i+1])
+
+        if len(path) > 1:
+            socket.emit('attack', start, path[1])
         return path
     else:
         print(f'traversal failed. terrain[{start}] = {terrain[start]} != {playerIndex}')
@@ -301,17 +301,15 @@ def handle_game_update(data, _):
     if not capital_distances:
         capital_distances = calculate_distances(generals[playerIndex])
 
-    if turn >= movement_finished_turn:
-        unowned_territory_distances = [-5 if terrain[i] == playerIndex else tile for i, tile in enumerate(capital_distances)]
-        lowest = 0
-        while lowest not in unowned_territory_distances:
-            lowest += 1
-        nearest_unexplored_loc = unowned_territory_distances.index(lowest)
-        army_sizes = [army if terrain[i] == playerIndex else 0 for i, army in enumerate(armies)]
-        largest_army_loc = army_sizes.index(max(army_sizes))
-        path = traverse(largest_army_loc, nearest_unexplored_loc)
-        print_path(path)
-        movement_finished_turn = len(path) - 1 + turn
+    unowned_territory_distances = [-5 if terrain[i] == playerIndex else tile for i, tile in enumerate(capital_distances)]
+    lowest = 0
+    while lowest not in unowned_territory_distances:
+        lowest += 1
+    nearest_unexplored_loc = unowned_territory_distances.index(lowest)
+    army_sizes = [army if terrain[i] == playerIndex else 0 for i, army in enumerate(armies)]
+    largest_army_loc = army_sizes.index(max(army_sizes))
+    path = traverse(largest_army_loc, nearest_unexplored_loc)
+    print_path(path)
 
     processing_update = False
 
