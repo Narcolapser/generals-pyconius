@@ -168,7 +168,7 @@ def handle_game_start(data, _):
     # Get ready to start playing the game.
     game_state = 'running'
     capital_distances = None
-    movement_finished_turn = 24
+    movement_finished_turn = 1
     playerIndex = data['playerIndex']
     # clearInterval(force_start_interval);
     replay_url = 'http://bot.generals.io/replays/' + quote(data['replay_id'])
@@ -302,14 +302,14 @@ def handle_game_update(data, _):
         capital_distances = calculate_distances(generals[playerIndex])
 
     if turn >= movement_finished_turn:
-        unowned_territory_distances = [tile for i, tile in enumerate(capital_distances) if terrain[i] != playerIndex]
-        # print("unowned_territory_distances:")
-        # print_as_grid(unowned_territory_distances, width=map_width, tile_aliases={**DEFAULT_GRID_ALIASES, -5:'*'})
-        furthest_unexplored_loc = unowned_territory_distances.index(min(unowned_territory_distances))
-        print(f'selected {furthest_unexplored_loc} and my starting location is {playerIndex}')
+        unowned_territory_distances = [-5 if terrain[i] == playerIndex else tile for i, tile in enumerate(capital_distances)]
+        lowest = 0
+        while lowest not in unowned_territory_distances:
+            lowest += 1
+        nearest_unexplored_loc = unowned_territory_distances.index(lowest)
         army_sizes = [army if terrain[i] == playerIndex else 0 for i, army in enumerate(armies)]
         largest_army_loc = army_sizes.index(max(army_sizes))
-        path = traverse(largest_army_loc, furthest_unexplored_loc)
+        path = traverse(largest_army_loc, nearest_unexplored_loc)
         print_path(path)
         movement_finished_turn = len(path) - 1 + turn
 
