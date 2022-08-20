@@ -1,3 +1,4 @@
+#! /bin/python3
 import json
 import sys
 import random
@@ -6,6 +7,7 @@ from wcwidth import wcswidth
 from urllib.parse import quote
 from string import ascii_letters
 from socketIO_client import SocketIO, BaseNamespace
+import time
 
 def wc_rjust(text, length, padding=' '):
     return padding * max(0, (length - wcswidth(text))) + text
@@ -38,6 +40,8 @@ class bcolors:
 SERVER_URL = 'https://bot.generals.io'
 REPLAY_URL_TEMPLATE = 'http://bot.generals.io/replays/%s'
 socket = SocketIO(SERVER_URL, Namespace=BaseNamespace) # What does Namespace do?
+
+replay = []
 
 custom_game_id = None
 user_config =  None
@@ -173,6 +177,7 @@ def handle_game_start(data, _):
     # clearInterval(force_start_interval);
     replay_url = 'http://bot.generals.io/replays/' + quote(data['replay_id'])
     print('Game starting! The replay will be available after the game at ' + replay_url)
+    replay.append(replay_url)
 
 def chart_path(start, dest):
     print(f'chart_path({start}, {dest})')
@@ -320,10 +325,12 @@ def game_over():
 
 def handle_win(_, __=None):
     print('I won!')
+    open('results.csv','a').write(f'{time.ctime()},Win,{replay.pop()}\n')
     game_over()
 
 def handle_loss(_, __=None):
     print('I lose.')
+    open('results.csv','a').write(f'{time.ctime()},Loss,{replay.pop()}\n')
     game_over()
 
 socket.on('connect', handle_connect)

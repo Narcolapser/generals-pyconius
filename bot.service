@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=toben
 WorkingDirectory=/home/toben/Code/generals_bots/generals-pyconius/
-ExecStart=/home/toben/Code/generals_bots/generals-pyconius/bot_edgehawk.py
+ExecStart=/home/toben/Code/generals_bots/generals-pyconius/bot_edgehawk.py 1v1 config.json
 Restart=on-failure
 
 [Install]
